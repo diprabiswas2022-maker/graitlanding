@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRAIT — Cloud infrastructure, described in English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10;
+    --bg-raised:#11141a;
+    --bg-panel:#0d1117;
+    --line:rgba(140,160,200,0.14);
+    --line-strong:rgba(140,160,200,0.26);
+    --blueprint:#4c8dff;
+    --blueprint-dim:rgba(76,141,255,0.12);
+    --violet:#8b5cf6;
+    --violet-dim:rgba(139,92,246,0.14);
+    --add:#34d399;
+    --change:#fbbf24;
+    --remove:#f87171;
+    --text:#f3f1ec;
+    --text-muted:#8b92a0;
+    --text-faint:#5b6172;
+    --radius:14px;
+    --display:'Space Grotesk', sans-serif;
+    --body:'Inter', sans-serif;
+    --mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;}
+  ::selection{background:var(--violet-dim);}
+
+  :focus-visible{
+    outline:2px solid var(--blueprint);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* blueprint grid backdrop */
+  .blueprint-bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%, black 0%, transparent 75%);
+    mask-image:radial-gradient(ellipse 90% 60% at 50% 0%, black 0%, transparent 75%);
+    opacity:0.5;
+  }
+
+  main, header, footer{position:relative; z-index:1;}
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:50;
+    backdrop-filter:blur(14px);
+    background:rgba(10,12,16,0.7);
+    border-bottom:1px solid var(--line);
+  }
+  .nav .wrap{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:72px;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--display);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.01em;
+  }
+  .logo-mark{width:26px;height:26px;}
+  .nav-links{
+    display:flex;
+    gap:32px;
+    font-size:14.5px;
+    color:var(--text-muted);
+  }
+  .nav-links a:hover{color:var(--text);}
+  .nav-cta{display:flex;align-items:center;gap:20px;}
+  .nav-cta .ghost{font-size:14.5px;color:var(--text-muted);}
+  .nav-cta .ghost:hover{color:var(--text);}
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 20px;
+    border-radius:9px;
+    font-size:14.5px;
+    font-weight:600;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform 0.15s ease, background 0.15s ease, border-color .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--violet); color:#0a0c10;}
+  .btn-primary:hover{background:#9d70f8;}
+  .btn-outline{border-color:var(--line-strong); color:var(--text);}
+  .btn-outline:hover{border-color:var(--blueprint); background:var(--blueprint-dim);}
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--blueprint);
+    text-transform:lowercase;
+    letter-spacing:0.02em;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:6px;height:6px;border-radius:50%;
+    background:var(--blueprint);
+    box-shadow:0 0 0 3px var(--blueprint-dim);
+  }
+
+  /* ---------- hero ---------- */
+  .hero{padding:96px 0 80px;}
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    gap:56px;
+    align-items:center;
+  }
+  .hero h1{
+    font-family:var(--display);
+    font-size:clamp(34px, 4.2vw, 52px);
+    line-height:1.08;
+    font-weight:700;
+    margin:0 0 22px;
+    letter-spacing:-0.01em;
+  }
+  .hero h1 .accent{color:var(--blueprint);}
+  .hero p.lead{
+    font-size:17.5px;
+    color:var(--text-muted);
+    max-width:480px;
+    margin:0 0 34px;
+  }
+  .hero-ctas{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:36px;}
+  .hero-note{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+  }
+
+  /* terminal */
+  .terminal{
+    background:var(--bg-panel);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,0.6);
+  }
+  .terminal-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,0.015);
+  }
+  .terminal-dot{width:9px;height:9px;border-radius:50%;}
+  .terminal-dot.r{background:#f87171;}
+  .terminal-dot.y{background:#fbbf24;}
+  .terminal-dot.g{background:#34d399;}
+  .terminal-title{
+    margin-left:6px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-faint);
+  }
+  .terminal-body{
+    font-family:var(--mono);
+    font-size:13px;
+    padding:22px 20px 26px;
+    min-height:330px;
+    color:var(--text-muted);
+    white-space:pre-wrap;
+  }
+  .t-line{opacity:0; transform:translateY(4px); margin:0 0 4px; transition:opacity .35s ease, transform .35s ease;}
+  .t-line.shown{opacity:1; transform:translateY(0);}
+  .t-prompt{color:var(--text);}
+  .t-prompt::before{content:'> '; color:var(--violet);}
+  .t-muted{color:var(--text-faint);}
+  .t-add{color:var(--add);}
+  .t-summary{color:var(--text);}
+  .t-ok{color:var(--add); font-weight:600;}
+  .cursor{
+    display:inline-block;
+    width:7px;height:14px;
+    background:var(--blueprint);
+    vertical-align:-2px;
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+
+  /* ---------- trust bar ---------- */
+  .trust{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:28px 0;
+  }
+  .trust .wrap{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    flex-wrap:wrap;
+  }
+  .trust-label{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+    white-space:nowrap;
+  }
+  .chip-row{display:flex; gap:12px; flex-wrap:wrap;}
+  .chip{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--text-muted);
+    border:1px solid var(--line-strong);
+    border-radius:7px;
+    padding:6px 12px;
+  }
+
+  /* ---------- section heading shared ---------- */
+  section{padding:96px 0;}
+  .section-head{max-width:620px; margin-bottom:56px;}
+  .section-head h2{
+    font-family:var(--display);
+    font-size:clamp(28px, 3vw, 38px);
+    font-weight:700;
+    margin:0 0 16px;
+    letter-spacing:-0.01em;
+  }
+  .section-head p{color:var(--text-muted); font-size:16px; margin:0;}
+
+  /* ---------- problem / compare ---------- */
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .compare-col{background:var(--bg-raised); padding:32px;}
+  .compare-col h3{
+    font-family:var(--mono);
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin:0 0 22px;
+    color:var(--text-faint);
+  }
+  .compare-col.after h3{color:var(--blueprint);}
+  .compare-row{
+    display:flex;
+    justify-content:space-between;
+    padding:14px 0;
+    border-top:1px solid var(--line);
+    font-size:15px;
+  }
+  .compare-row:first-of-type{border-top:none;}
+  .compare-row span:first-child{color:var(--text-muted);}
+  .compare-row span:last-child{font-family:var(--mono); font-size:14px;}
+  .compare-col:not(.after) .compare-row span:last-child{color:var(--remove);}
+  .compare-col.after .compare-row span:last-child{color:var(--add);}
+
+  /* ---------- how it works ---------- */
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:28px;
+  }
+  .step{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:30px 26px;
+    background:var(--bg-raised);
+    position:relative;
+  }
+  .step .cmd{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--violet);
+    background:var(--violet-dim);
+    border-radius:6px;
+    padding:4px 9px;
+    margin-bottom:18px;
+  }
+  .step h3{
+    font-family:var(--display);
+    font-size:20px;
+    margin:0 0 10px;
+  }
+  .step p{color:var(--text-muted); font-size:14.5px; margin:0;}
+  .step-arrow{
+    display:none;
+  }
+
+  /* ---------- features ---------- */
+  .features-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .feature-card{
+    background:var(--bg-raised);
+    padding:30px 26px;
+    transition:background .2s ease;
+  }
+  .feature-card:hover{background:#141822;}
+  .feature-icon{
+    width:34px;height:34px;
+    border-radius:8px;
+    background:var(--blueprint-dim);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .feature-card h3{
+    font-family:var(--display);
+    font-size:17px;
+    margin:0 0 8px;
+  }
+  .feature-card p{color:var(--text-muted); font-size:14px; margin:0;}
+
+  /* ---------- testimonials ---------- */
+  .quotes{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  .quote-card{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px;
+    background:var(--bg-raised);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .quote-card p.q{
+    font-size:15.5px;
+    color:var(--text);
+    margin:0 0 22px;
+  }
+  .quote-card .who{font-size:13.5px; color:var(--text-muted);}
+  .quote-card .who b{color:var(--text); font-weight:600;}
+
+  /* ---------- cta banner ---------- */
+  .cta-banner{
+    border:1px solid var(--line-strong);
+    border-radius:20px;
+    padding:64px 56px;
+    background:radial-gradient(circle at 18% 20%, var(--violet-dim), transparent 55%), var(--bg-raised);
+    text-align:center;
+  }
+  .cta-banner h2{
+    font-family:var(--display);
+    font-size:clamp(26px,3.4vw,36px);
+    margin:0 0 16px;
+  }
+  .cta-banner p{color:var(--text-muted); margin:0 0 30px;}
+  .cta-banner .hero-ctas{justify-content:center;}
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:64px 0 36px;
+  }
+  .footer-grid{
+    display:grid;
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
+    gap:40px;
+    margin-bottom:48px;
+  }
+  .footer-brand p{color:var(--text-muted); font-size:14px; max-width:260px;}
+  .footer-col h4{
+    font-family:var(--mono);
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-faint);
+    margin:0 0 16px;
+  }
+  .footer-col a{
+    display:block;
+    color:var(--text-muted);
+    font-size:14px;
+    margin-bottom:11px;
+  }
+  .footer-col a:hover{color:var(--text);}
+  .footer-bottom{
+    border-top:1px solid var(--line);
+    padding-top:24px;
+    display:flex;
+    justify-content:space-between;
+    color:var(--text-faint);
+    font-size:13px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+
+  /* reveal-on-scroll */
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.is-visible{opacity:1; transform:translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+    .reveal{opacity:1; transform:none;}
+    .t-line{opacity:1; transform:none;}
+  }
+
+  @media (max-width: 920px){
+    .hero-grid{grid-template-columns:1fr; gap:40px;}
+    .nav-links{display:none;}
+    .compare{grid-template-columns:1fr;}
+    .steps{grid-template-columns:1fr;}
+    .features-grid{grid-template-columns:1fr;}
+    .quotes{grid-template-columns:1fr;}
+    .footer-grid{grid-template-columns:1fr 1fr;}
+    .cta-banner{padding:48px 28px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="blueprint-bg"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="logo">
+      <svg class="logo-mark" viewBox="0 0 26 26" fill="none">
+        <rect x="1" y="1" width="24" height="24" rx="6" stroke="#4c8dff" stroke-width="1.4"/>
+        <path d="M13 6.5V13H19" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="13" cy="13" r="1.6" fill="#34d399"/>
+      </svg>
+      GRAIT
+    </div>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#proof">Customers</a>
+      <a href="#">Pricing</a>
+      <a href="#">Docs</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="https://graitai.rokkun.dev/auth/sign-in" class="ghost">Sign in</a>
+      <a href="https://graitai.rokkun.dev/auth/sign-in" class="btn btn-primary">Get started</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">infrastructure-as-a-sentence</span>
+        <h1>Describe the infrastructure you need. <span class="accent">We turn it into Terraform</span> and ship it.</h1>
+        <p class="lead">GRAIT turns plain-language requests into production-ready Terraform and provisions it across your cloud — so new environments, databases, and services don't have to wait on a dedicated DevOps engineer.</p>
+        <div class="hero-ctas">
+          <a href="#" class="btn btn-primary">Get a free infra audit</a>
+          <a href="#how" class="btn btn-outline">See how it works</a>
+        </div>
+        <div class="hero-note">No CLI required. Every change still lands as reviewable, version-controlled Terraform.</div>
+      </div>
+
+      <div class="terminal" id="terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot r"></span>
+          <span class="terminal-dot y"></span>
+          <span class="terminal-dot g"></span>
+          <span class="terminal-title">grait — production</span>
+        </div>
+        <div class="terminal-body" id="terminalBody"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR -->
+  <section class="trust" style="padding-top:0; padding-bottom:28px;">
+    <div class="wrap">
+      <span class="trust-label">// provisions workloads on</span>
+      <div class="chip-row">
+        <span class="chip">AWS</span>
+        <span class="chip">Google Cloud</span>
+        <span class="chip">Azure</span>
+        <span class="chip">Kubernetes</span>
+        <span class="chip">Cloudflare</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM / COMPARE -->
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">the bottleneck</span>
+        <h2>Every new resource shouldn't need a ticket.</h2>
+        <p>Most engineering teams route every database, environment, and access change through one or two DevOps engineers. That queue is the real cost — not the cloud bill.</p>
+      </div>
+      <div class="compare reveal">
+        <div class="compare-col">
+          <h3>Without GRAIT</h3>
+          <div class="compare-row"><span>New environment</span><span>filed as a ticket</span></div>
+          <div class="compare-row"><span>Terraform written by</span><span>one or two specialists</span></div>
+          <div class="compare-row"><span>Time to provision</span><span>days, if unblocked</span></div>
+          <div class="compare-row"><span>Cost visibility</span><span>after the invoice arrives</span></div>
+          <div class="compare-row"><span>Config drift</span><span>found during an incident</span></div>
+        </div>
+        <div class="compare-col after">
+          <h3>With GRAIT</h3>
+          <div class="compare-row"><span>New environment</span><span>described in a sentence</span></div>
+          <div class="compare-row"><span>Terraform written by</span><span>GRAIT, reviewed by anyone</span></div>
+          <div class="compare-row"><span>Time to provision</span><span>minutes, after approval</span></div>
+          <div class="compare-row"><span>Cost visibility</span><span>estimated before apply</span></div>
+          <div class="compare-row"><span>Config drift</span><span>flagged automatically</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">how it works</span>
+        <h2>The same three steps Terraform always runs. We just remove the part where a human writes the HCL.</h2>
+      </div>
+      <div class="steps reveal">
+        <div class="step">
+          <span class="cmd">terraform init</span>
+          <h3>Describe what you need</h3>
+          <p>Type a request in plain English — a staging environment, a managed Postgres instance, a new VPC. No prior Terraform knowledge required.</p>
+        </div>
+        <div class="step">
+          <span class="cmd">terraform plan</span>
+          <h3>Review the plan</h3>
+          <p>GRAIT generates the Terraform, estimates the monthly cost, and shows exactly what will be added, changed, or destroyed.</p>
+        </div>
+        <div class="step">
+          <span class="cmd">terraform apply</span>
+          <h3>Ship it</h3>
+          <p>Approve once. GRAIT provisions the resources, tags them correctly, and commits the generated code to your repo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">what's included</span>
+        <h2>Everything a DevOps team does for provisioning, minus the queue.</h2>
+      </div>
+      <div class="features-grid reveal">
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M2 3h8M2 13h5" stroke="#4c8dff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h3>Plain-language provisioning</h3>
+          <p>Describe a resource the way you'd explain it to a colleague. GRAIT handles the Terraform syntax.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#4c8dff" stroke-width="1.6"/><path d="M8 5v3l2 2" stroke="#4c8dff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h3>Multi-cloud by default</h3>
+          <p>AWS, GCP, and Azure resources behave like one platform, with a single review-and-approve workflow.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 14V8l6-6 6 6v6" stroke="#4c8dff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h3>Drift detection</h3>
+          <p>If live infrastructure stops matching the committed Terraform, GRAIT flags it before it causes an incident.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M3 5h10M3 11h10" stroke="#4c8dff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h3>Cost guardrails</h3>
+          <p>Every plan shows an estimated monthly cost, and oversized resources can be blocked before they're applied.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#4c8dff" stroke-width="1.6"/><path d="M5 8h6" stroke="#4c8dff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h3>Policy as code</h3>
+          <p>Tagging, encryption, and network rules are enforced automatically on every resource GRAIT generates.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="5" r="2" stroke="#4c8dff" stroke-width="1.6"/><circle cx="11" cy="11" r="2" stroke="#4c8dff" stroke-width="1.6"/><path d="M6.5 6.5l3 3" stroke="#4c8dff" stroke-width="1.6"/></svg></div>
+          <h3>Self-service for developers</h3>
+          <p>Anyone on the team can request infrastructure directly — no ticket to a DevOps queue required.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="proof">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">teams running on grait</span>
+        <h2>Fewer tickets. Same guardrails.</h2>
+      </div>
+      <div class="quotes reveal">
+        <div class="quote-card">
+          <p class="q">"We used to wait three days for a new environment. Now an engineer asks for it and it's ready before standup."</p>
+          <div class="who"><b>Priya Anand</b> — Head of Engineering, Solace Robotics</div>
+        </div>
+        <div class="quote-card">
+          <p class="q">"GRAIT didn't replace our DevOps engineer — it gave her back the time she used to spend on routine tickets."</p>
+          <div class="who"><b>Marcus Webb</b> — CTO, Northstar Health</div>
+        </div>
+        <div class="quote-card">
+          <p class="q">"The plan output is the part our security team actually reads now, because it's short enough to review in one sitting."</p>
+          <div class="who"><b>Elena Voss</b> — Platform Lead, Fernweh Travel</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section>
+    <div class="wrap">
+      <div class="cta-banner reveal">
+        <h2>Stop being the bottleneck for every cloud request.</h2>
+        <p>Get a free audit of your current infrastructure and see what GRAIT would automate first.</p>
+        <div class="hero-ctas">
+          <a href="#" class="btn btn-primary">Get a free infra audit</a>
+          <a href="#" class="btn btn-outline">Talk to the team</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo" style="margin-bottom:14px;">
+          <svg class="logo-mark" viewBox="0 0 26 26" fill="none">
+            <rect x="1" y="1" width="24" height="24" rx="6" stroke="#4c8dff" stroke-width="1.4"/>
+            <path d="M13 6.5V13H19" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="13" cy="13" r="1.6" fill="#34d399"/>
+          </svg>
+          GRAIT
+        </div>
+        <p>Plain-language infrastructure requests, turned into reviewable Terraform and shipped to your cloud.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#">Pricing</a>
+        <a href="#">Security</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="#">Documentation</a>
+        <a href="#">Terraform modules</a>
+        <a href="#">Blog</a>
+        <a href="#">Status</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Careers</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 GRAIT Inc.</span>
+      <span>Terraform is a registered trademark of HashiCorp. GRAIT is an independent automation layer built on top of it.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // reveal-on-scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // terminal sequence
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const body = document.getElementById('terminalBody');
+
+  const lines = [
+    { html: '<span class="t-prompt">&quot;Give us a production EKS cluster with autoscaling, a managed Postgres database, and daily backups.&quot;</span>', delay: 0 },
+    { html: '<span class="t-muted">&nbsp;</span>', delay: 200 },
+    { html: '<span class="t-muted">Generating Terraform...</span>', delay: 500 },
+    { html: '<span class="t-add">+ resource &quot;aws_eks_cluster&quot; &quot;primary&quot; {</span>', delay: 350 },
+    { html: '<span class="t-add">+ resource &quot;aws_eks_node_group&quot; &quot;default&quot; {</span>', delay: 220 },
+    { html: '<span class="t-add">+ resource &quot;aws_rds_cluster&quot; &quot;postgres&quot; {</span>', delay: 220 },
+    { html: '<span class="t-add">+ resource &quot;aws_backup_plan&quot; &quot;daily&quot; {</span>', delay: 220 },
+    { html: '<span class="t-add">+ resource &quot;aws_autoscaling_policy&quot; &quot;scale_up&quot; {</span>', delay: 220 },
+    { html: '<span class="t-muted">&nbsp;&nbsp;&nbsp;... 9 more resources</span>', delay: 250 },
+    { html: '<span class="t-muted">&nbsp;</span>', delay: 150 },
+    { html: '<span class="t-summary">Plan: 14 to add, 0 to change, 0 to destroy.</span>', delay: 450 },
+    { html: '<span class="t-ok">&#10003; Apply complete! Resources: 14 added.</span>', delay: 500 },
+    { html: '<span class="t-muted">Synced to git — infra/production/eks.tf</span>', delay: 300 },
+  ];
+
+  function renderInstant(){
+    body.innerHTML = lines.map(l => `<div class="t-line shown">${l.html}</div>`).join('');
+  }
+
+  function renderSequence(){
+    let delayAcc = 300;
+    lines.forEach((l) => {
+      const div = document.createElement('div');
+      div.className = 't-line';
+      div.innerHTML = l.html;
+      body.appendChild(div);
+      delayAcc += l.delay;
+      setTimeout(() => div.classList.add('shown'), delayAcc);
+    });
+  }
+
+  if (reduceMotion) {
+    renderInstant();
+  } else {
+    const termIO = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          renderSequence();
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    termIO.observe(document.getElementById('terminal'));
+  }
+</script>
+
+</body>
+</html>
